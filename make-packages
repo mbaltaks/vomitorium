@@ -1,0 +1,80 @@
+#!/bin/sh
+# Created by Michael Baltaks
+
+# Build release pair script: build a pair of release candidate packages
+# - bump the build number
+# - commit
+# - clean and build
+# - package and sign for appstore and adhoc
+# - keep both packages and debug symbols, just for debugging test crash logs, or for later storing the final build and symbols.
+
+# Don't allow using unset vars (-u)
+set -o nounset
+# Exit on error (-e)
+set -o errexit
+
+if [ $# -lt 2 ]; then
+	script_name=$(basename $0)
+	echo "usage: ${script_name} workspace_folder packages_folder" >&2
+	exit 1
+fi
+
+workspace_folder="$1"
+packages_folder="$2"
+
+plistbuddy="/usr/libexec/PlistBuddy"
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
+script_folder="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+current_folder="$(pwd)"
+cd "${packages_folder}"
+packages_folder="$(pwd)"
+cd "${current_folder}"
+cd "${workspace_folder}"
+repo_folder="$(pwd)"
+app_config="${workspace_folder}/scripts/app.config"
+
+if [ ! -f "${app_config}" ];
+then
+    [ $# -lt 3 ] && echo "You must supply a config name" && exit 1
+    source "${workspace_folder}/scripts/$3-app.config"
+    info_plist="${repo_folder}/${RESOURCES_FOLDER}/${INFO_PLIST_PREFIX}-Info.plist"
+
+    # Now edit the info plist to use customer specific settings.
+    ${plistbuddy} -c "set :CFBundleDisplayName '${CFBundleDisplayName}'" "$info_plist"
+    ${plistbuddy} -c "set :CFBundleIdentifier '${CFBundleIdentifier}'" "$info_plist"
+    ${plistbuddy} -c "set :UILaunchImageFile '${UILaunchImageFile}'" "$info_plist"
+else
+    source "${app_config}"
+fi
+
+
+CONFIGURATION=Release
+SDK=iphoneos
+RELEASE_BUILD_FOLDER="${repo_folder}/build/${CONFIGURATION}-${SDK}"
+
+info_plist="${repo_folder}/${RESOURCES_FOLDER}/${INFO_PLIST_PREFIX}-Info.plist"
+
+agvtool bump -all
+#version=`agvtool mvers -terse1`
+version=`${plistbuddy} -c "print :CFBundleShortVersionString" "$info_plist"`
+buildnumber=`agvtool vers -terse`
+git commit -a -m "Release $version build $buildnumber"
+
+xcodebuild -workspace ${WORKSPACE}.xcworkspace -scheme ${SCHEME} -configuration ${CONFIGURATION} -sdk ${SDK} clean CONFIGURATION_BUILD_DIR=${RELEASE_BUILD_FOLDER}
+xcodebuild -workspace ${WORKSPACE}.xcworkspace -scheme ${SCHEME} -configuration ${CONFIGURATION} -sdk ${SDK} CODE_SIGN_IDENTITY="${APPSTORE_CERTIFICATE_NAME}" build CONFIGURATION_BUILD_DIR=${RELEASE_BUILD_FOLDER}
+
+BUNDLE_ID=`codesign -d --verbose "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" 2>&1 >/dev/null | grep Identifier | sed "s/Identifier=//"`
+ADHOC_PACKAGE_FOLDER="${packages_folder}/${APPLICATION_PACKAGE_NAME}-${BUNDLE_ID}/${version}-${buildnumber}/adhoc"
+APPSTORE_PACKAGE_FOLDER="${packages_folder}/${APPLICATION_PACKAGE_NAME}-${BUNDLE_ID}/${version}-${buildnumber}/appstore"
+
+# AdHoc build
+mkdir -p "${ADHOC_PACKAGE_FOLDER}"
+xcrun -log -verbose -sdk ${SDK} PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${ADHOC_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${ADHOC_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${ADHOC_PROVISONING_PROFILE}.mobileprovision"
+
+# App Store build
+mkdir -p "${APPSTORE_PACKAGE_FOLDER}"
+xcrun -log -verbose  -sdk ${SDK} PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${APPSTORE_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${APPSTORE_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${APPSTORE_PROVISONING_PROFILE}.mobileprovision"
+cp -rp "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app.dSYM" "${APPSTORE_PACKAGE_FOLDER}"
