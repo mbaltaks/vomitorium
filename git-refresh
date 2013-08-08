@@ -1,0 +1,29 @@
+#!/bin/sh
+# Created by Michael Baltaks
+
+branch_name="$(git symbolic-ref HEAD 2>/dev/null)" || branch_name="(unnamed branch)"     # detached HEAD
+branch_name=${branch_name##refs/heads/}
+
+#echo $branch_name
+# if [ -z "$1" ]
+# then
+# 	echo "You must specify a working branch."
+# 	exit 0
+# fi
+# branch_name=$1
+
+if [ "${branch_name}" = "(unnamed branch)" ]
+then
+	echo "This will not run if you're not on a normal branch."
+	exit 0
+fi
+
+git stash && git checkout master && git pull
+
+if [ 0 = $? ]
+then
+	git rebase master "${branch_name}" && git stash pop
+else
+	echo "git pull failed"
+	git checkout "${branch_name}" && git stash pop
+fi
