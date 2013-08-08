@@ -1,0 +1,44 @@
+#!/bin/sh
+# Created by Michael Baltaks
+
+# Resign an ipa package
+# Useful for Apple Enterprise In-House apps, where you need to re-sign an
+# app every time the certificate expires.
+
+# Don't allow using unset vars (-u)
+set -o nounset
+# Exit on error (-e)
+set -o errexit
+
+if [ $# -lt 3 ]; then
+	echo "usage: $0 original.ipa provisioning_profile resigned.ipa" >&2
+	exit 1
+fi
+
+original_ipa="$1"
+provisioning_profile="$2"
+new_ipa="$3"
+
+working_folder=$(mktemp -dt "$(basename $0)")
+
+unzip -d "${working_folder}" "${original_ipa}"
+
+payload_path="${working_folder}/Payload/"
+bundle_name=$(ls "${payload_path}")
+app_name=${bundle_name%.app}
+bundle_path="${payload_path}${bundle_name}"
+
+codesign -d --entitlements "${working_folder}/entitlements.plist" "${bundle_path}"/"${app_name}"
+identity=$(codesign -d -vv "${bundle_path}"/"${app_name}" 2>&1 | grep "Authority=iPhone Distribution")
+signing_identity=${identity#Authority=}
+rm -rf "${bundle_path}"/_CodeSignature/
+cp "${provisioning_profile}" "${bundle_path}"/embedded.mobileprovision
+codesign -f -s "${signing_identity}" --resource-rules "${bundle_path}"/ResourceRules.plist --entitlements "${working_folder}/entitlements.plist" "${bundle_path}"
+
+calling_folder=$(pwd)
+cd "${working_folder}"
+zip -qr resigned.ipa "Payload/"
+cd "${calling_folder}"
+mv "${working_folder}/resigned.ipa" "${new_ipa}"
+
+rm -r "${working_folder}"
