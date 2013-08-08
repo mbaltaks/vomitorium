@@ -1,0 +1,33 @@
+#!/bin/sh
+# Created by Michael Baltaks
+
+# Submit customer release script: mark a customer release from a pair of release candidate packages
+# - tag the release commit
+# - bump the visible version
+# - commit the visible version change (so all new builds are candidates for the next version)
+# - push tags
+
+# Don't allow using unset vars (-u)
+set -o nounset
+# Exit on error (-e)
+set -o errexit
+
+version=`agvtool mvers -terse1`
+buildnumber=`agvtool vers -terse`
+
+if [ $# -lt 1 ]; then
+	script_name=$(basename $0)
+	echo "usage: ${script_name} new_app_version (current version is $version)" >&2
+	exit 1
+fi
+
+# Tag the release
+git tag -m "Release $version build $buildnumber" -a Release-${version}
+
+# Prepare for the next release
+mvers=$1
+agvtool new-marketing-version $mvers
+git commit -a -m "Start dev cycle for version $mvers"
+
+#git push
+git push --tags
