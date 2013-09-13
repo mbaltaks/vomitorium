@@ -31,6 +31,7 @@
 use strict;
 
 use File::Basename;
+use File::Compare;
 use File::Spec;
 use File::Temp qw(tempfile);
 use Getopt::Long;
@@ -144,8 +145,13 @@ for my $projectFile (@ARGV) {
     close(IN);
     close($OUT);
 
-    unlink($projectFile) || die "Could not delete $projectFile: $!";
-    rename($tempFileName, $projectFile) || die "Could not rename $tempFileName to $projectFile: $!";
+    if (compare($projectFile, $tempFileName) == 0) {
+        print "No change to $projectFile\n";
+        unlink($tempFileName) || die "Could not delete $tempFileName: $!";
+    } else {
+        unlink($projectFile) || die "Could not delete $projectFile: $!";
+        rename($tempFileName, $projectFile) || die "Could not rename $tempFileName to $projectFile: $!";
+    }
 }
 
 exit 0;
