@@ -37,6 +37,7 @@ packages_folder="$(pwd)"
 cd "${current_folder}"
 cd "${workspace_folder}"
 repo_folder="$(pwd)"
+# TODO: this expects the app config files to live in a scripts folder.
 app_config="${workspace_folder}/scripts/app.config"
 
 if [ ! -f "${app_config}" ];
