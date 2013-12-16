@@ -23,6 +23,7 @@ git stash && git checkout master && git pull
 if [ 0 = $? ]
 then
 	git rebase master "${branch_name}" && git stash pop
+	exit 0;
 else
 	echo "git pull failed"
 	git checkout "${branch_name}" && git stash pop

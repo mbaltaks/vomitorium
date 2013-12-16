@@ -23,6 +23,7 @@ fi
 if [ 0 = $? ]
 then
 	git rebase master "${branch_name}" && git stash pop
+	exit 0;
 else
 	echo "git push failed"
 	git checkout "${branch_name}" && git stash pop
