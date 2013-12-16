@@ -16,17 +16,17 @@ version=`agvtool mvers -terse1`
 buildnumber=`agvtool vers -terse`
 
 if [ $# -lt 1 ]; then
-	script_name=$(basename $0)
+	script_name="$(basename $0)"
 	echo "usage: ${script_name} new_app_version (current version is $version)" >&2
 	exit 1
 fi
 
 # Tag the release
-git tag -m "Release $version build $buildnumber" -a Release-${version}
+git tag -m "Release $version build $buildnumber" -a "Release-${version}"
 
 # Prepare for the next release
-mvers=$1
-agvtool new-marketing-version $mvers
+mvers="$1"
+agvtool new-marketing-version "$mvers"
 git commit -a -m "Start dev cycle for version $mvers"
 
 #git push
