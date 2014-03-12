@@ -19,8 +19,7 @@ if [ $# -lt 2 ]; then
 	exit 1
 fi
 
-xcodebuild="/usr/bin/xcodebuild"
-xcrun="/usr/bin/xcrun"
+# To use an old toolchain, set DEVELOPER_DIR=/Applications/Xcode4.app/Contents/Developer
 
 workspace_folder="$1"
 packages_folder="$2"
@@ -67,8 +66,8 @@ version=`${plistbuddy} -c "print :CFBundleShortVersionString" "$info_plist"`
 buildnumber=`agvtool vers -terse`
 git commit -a -m "Release $version build $buildnumber"
 
-"${xcodebuild}" -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" clean CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
-"${xcodebuild}" -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" CODE_SIGN_IDENTITY="${APPSTORE_CERTIFICATE_NAME}" build CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
+xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" clean CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
+xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" CODE_SIGN_IDENTITY="${APPSTORE_CERTIFICATE_NAME}" build CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
 
 BUNDLE_ID=`codesign -d --verbose "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" 2>&1 >/dev/null | grep Identifier | sed "s/Identifier=//"`
 ADHOC_PACKAGE_FOLDER="${packages_folder}/${APPLICATION_PACKAGE_NAME}-${BUNDLE_ID}/${version}-${buildnumber}/adhoc"
@@ -76,9 +75,9 @@ APPSTORE_PACKAGE_FOLDER="${packages_folder}/${APPLICATION_PACKAGE_NAME}-${BUNDLE
 
 # AdHoc build
 mkdir -p "${ADHOC_PACKAGE_FOLDER}"
-"${xcrun}" -log -verbose -sdk "${SDK}" PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${ADHOC_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${ADHOC_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${ADHOC_PROVISONING_PROFILE}.mobileprovision"
+xcrun -log -verbose -sdk "${SDK}" PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${ADHOC_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${ADHOC_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${ADHOC_PROVISONING_PROFILE}.mobileprovision"
 
 # App Store build
 mkdir -p "${APPSTORE_PACKAGE_FOLDER}"
-"${xcrun}" -log -verbose  -sdk "${SDK}" PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${APPSTORE_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${APPSTORE_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${APPSTORE_PROVISONING_PROFILE}.mobileprovision"
+xcrun -log -verbose  -sdk "${SDK}" PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${APPSTORE_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${APPSTORE_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${APPSTORE_PROVISONING_PROFILE}.mobileprovision"
 cp -rp "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app.dSYM" "${APPSTORE_PACKAGE_FOLDER}"
