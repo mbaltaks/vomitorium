@@ -69,7 +69,7 @@ git commit -a -m "Release $version build $buildnumber"
 xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" clean CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
 xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" CODE_SIGN_IDENTITY="${APPSTORE_CERTIFICATE_NAME}" build CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
 
-BUNDLE_ID=`codesign -d --verbose "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" 2>&1 >/dev/null | grep Identifier | sed "s/Identifier=//"`
+BUNDLE_ID=`codesign -d --verbose "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" 2>&1 >/dev/null | grep ^Identifier | sed "s/^Identifier=//"`
 ADHOC_PACKAGE_FOLDER="${packages_folder}/${APPLICATION_PACKAGE_NAME}-${BUNDLE_ID}/${version}-${buildnumber}/adhoc"
 APPSTORE_PACKAGE_FOLDER="${packages_folder}/${APPLICATION_PACKAGE_NAME}-${BUNDLE_ID}/${version}-${buildnumber}/appstore"
 
