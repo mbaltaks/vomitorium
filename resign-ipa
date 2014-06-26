@@ -19,7 +19,7 @@ original_ipa="$1"
 provisioning_profile="$2"
 new_ipa="$3"
 
-working_folder="$(mktemp -dt \"$(basename $0)\")"
+working_folder="$(mktemp -dt $(basename $0))"
 
 unzip -d "${working_folder}" "${original_ipa}"
 
@@ -29,7 +29,7 @@ app_name="${bundle_name%.app}"
 bundle_path="${payload_path}${bundle_name}"
 
 codesign -d --entitlements "${working_folder}/entitlements.plist" "${bundle_path}"/"${app_name}"
-identity="$(codesign -d -vv \"${bundle_path}\"/\"${app_name}\" 2>&1 | grep \"Authority=iPhone Distribution\")"
+identity=`codesign -d -vv "${bundle_path}"/"${app_name}" 2>&1 | grep "^Authority=iPhone Distribution"`
 signing_identity="${identity#Authority=}"
 rm -rf "${bundle_path}"/_CodeSignature/
 cp "${provisioning_profile}" "${bundle_path}"/embedded.mobileprovision
