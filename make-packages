@@ -55,9 +55,7 @@ fi
 
 
 CONFIGURATION=Release
-if [ -z "$SDK" ]; then
-    SDK=iphoneos
-fi
+SDK="${BUILDSDK:=iphoneos}"
 RELEASE_BUILD_FOLDER="${repo_folder}/build/${CONFIGURATION}-${SDK}"
 
 info_plist="${repo_folder}/${RESOURCES_FOLDER}/${INFO_PLIST_PREFIX}-Info.plist"
