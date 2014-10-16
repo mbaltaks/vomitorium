@@ -14,10 +14,18 @@ git stash && git checkout master && git pull
 
 if [ 0 = $? ]
 then
-	git rebase master "${branch_name}" && git checkout master && git merge "${branch_name}" && git push
+	git rebase master "${branch_name}"
 else
 	echo "git pull failed"
 	git checkout "${branch_name}" && git stash pop
+fi
+
+if [ 0 = $? ]
+then
+	git checkout master && git merge "${branch_name}" && git push
+else
+	echo "git rebase failed, you need to solve the conflicts"
+	exit 1;
 fi
 
 if [ 0 = $? ]
