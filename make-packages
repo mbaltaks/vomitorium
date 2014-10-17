@@ -48,7 +48,7 @@ then
     # Now edit the info plist to use customer specific settings.
     ${plistbuddy} -c "set :CFBundleDisplayName '${CFBundleDisplayName}'" "$info_plist"
     ${plistbuddy} -c "set :CFBundleIdentifier '${CFBundleIdentifier}'" "$info_plist"
-    ${plistbuddy} -c "set :UILaunchImageFile '${UILaunchImageFile}'" "$info_plist"
+    if [ ! -z ${UILaunchImageFile} ]; then ${plistbuddy} -c "set :UILaunchImageFile '${UILaunchImageFile}'" "$info_plist"; fi
 else
     source "${app_config}"
 fi
