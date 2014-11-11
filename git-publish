@@ -1,12 +1,25 @@
 #!/bin/sh
 # Created by Michael Baltaks
 
+# Don't allow using unset vars (-u)
+set -o nounset
+# Exit on error (-e)
+#set -o errexit (not used here because if git pull fails we need to clean up)
+
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" || branch_name="(unnamed branch)"     # detached HEAD
 branch_name="${branch_name##refs/heads/}"
 
 if [ "${branch_name}" = "(unnamed branch)" ]
 then
 	echo "This will not run if you're not on a normal branch."
+	exit 0
+fi
+
+# stop if there is already something stashed.
+stash_list=`git stash list`
+if [[ ${stash_list} == *stash* ]]
+then
+	echo "There are already stashed changes, please empty your stash before using this script"
 	exit 0
 fi
 
