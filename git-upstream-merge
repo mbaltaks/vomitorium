@@ -1,6 +1,9 @@
 #!/bin/sh
 # Created by Michael Baltaks
 
+# This assumes a local branch "upstream" that tracks your upstream remote.
+# This assumes that your local master branch is always clean and only tracks the remote for your fork.
+
 # Don't allow using unset vars (-u)
 set -o nounset
 # Exit on error (-e)
