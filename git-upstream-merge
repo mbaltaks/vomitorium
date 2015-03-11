@@ -3,6 +3,7 @@
 
 # This assumes a local branch "upstream" that tracks your upstream remote. `git checkout -b upstream upstream/master`
 # This assumes that your local master branch is always clean and only tracks the remote for your fork.
+# The workflow is make local commits to a working branch. When ready to have the team review those changes, git-publish, which pushes to the remote for your local master branch (usually the origin, which should be your fork of the project repo). Then create a merge request for the team to review. Once that merge request is accepted into the main repo, run this script to merge those and all other changes into your fork and local master.
 
 # Don't allow using unset vars (-u)
 set -o nounset
