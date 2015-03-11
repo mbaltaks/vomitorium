@@ -1,7 +1,7 @@
 #!/bin/sh
 # Created by Michael Baltaks
 
-# This assumes a local branch "upstream" that tracks your upstream remote.
+# This assumes a local branch "upstream" that tracks your upstream remote. `git checkout -b upstream upstream/master`
 # This assumes that your local master branch is always clean and only tracks the remote for your fork.
 
 # Don't allow using unset vars (-u)
@@ -38,8 +38,17 @@ fi
 
 if [ 0 = $? ]
 then
+	git push # push the merge commit back to origin
+else
+	echo "git merge of upstream into master failed. Don't forget to 'git stash pop' later."
+	exit 1;
+fi
+
+if [ 0 = $? ]
+then
 	git rebase master "${branch_name}" && git stash pop
 	exit 0;
 else
-	echo "git merge of upstream into master failed. Don't forget to 'git stash pop' later."
+	echo "git push failed"
+	git checkout "${branch_name}" && git stash pop
 fi
