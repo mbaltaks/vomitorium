@@ -60,6 +60,8 @@ RELEASE_BUILD_FOLDER="${repo_folder}/build/${CONFIGURATION}-${SDK}"
 
 info_plist="${repo_folder}/${RESOURCES_FOLDER}/${INFO_PLIST_PREFIX}-Info.plist"
 
+xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${TEST_CONFIGURATION}" -sdk "${TEST_SDK}" clean test -destination "${TEST_DESTINATION}"
+
 agvtool bump -all
 #version=`agvtool mvers -terse1`
 version=`${plistbuddy} -c "print :CFBundleShortVersionString" "$info_plist"`
