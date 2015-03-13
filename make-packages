@@ -66,7 +66,6 @@ agvtool bump -all
 #version=`agvtool mvers -terse1`
 version=`${plistbuddy} -c "print :CFBundleShortVersionString" "$info_plist"`
 buildnumber=`agvtool vers -terse`
-git commit -a -m "Release $version build $buildnumber"
 
 xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" clean CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
 xcodebuild -workspace "${WORKSPACE}.xcworkspace" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" CODE_SIGN_IDENTITY="${APPSTORE_CERTIFICATE_NAME}" build CONFIGURATION_BUILD_DIR="${RELEASE_BUILD_FOLDER}"
@@ -83,3 +82,5 @@ xcrun -log -verbose -sdk "${SDK}" PackageApplication -v "${RELEASE_BUILD_FOLDER}
 mkdir -p "${APPSTORE_PACKAGE_FOLDER}"
 xcrun -log -verbose  -sdk "${SDK}" PackageApplication -v "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app" -o "${APPSTORE_PACKAGE_FOLDER}/${APPLICATION_PACKAGE_NAME}.ipa" --sign "${APPSTORE_CERTIFICATE_NAME}" --embed "${HOME}/Library/MobileDevice/Provisioning Profiles/${APPSTORE_PROVISONING_PROFILE}.mobileprovision"
 cp -rp "${RELEASE_BUILD_FOLDER}/${APPLICATION_BUNDLE_NAME}.app.dSYM" "${APPSTORE_PACKAGE_FOLDER}"
+
+git commit -a -m "Release $version build $buildnumber"
