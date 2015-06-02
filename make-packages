@@ -44,7 +44,7 @@ if [ ! -f "${app_config}" ];
 then
     [ $# -lt 3 ] && echo "You must supply a config name" && exit 1
     source "${workspace_folder}/scripts/$3-app.config"
-	if [ ! -z ${INFO_PLIST_PREFIX} ]; then info_plist_full_prefix = "${INFO_PLIST_PREFIX}-"; fi
+	if [ ! -z ${INFO_PLIST_PREFIX} ]; then info_plist_full_prefix="${INFO_PLIST_PREFIX}-"; fi
     info_plist="${repo_folder}/${RESOURCES_FOLDER}/${info_plist_full_prefix}Info.plist"
 
     # Now edit the info plist to use customer specific settings.
@@ -60,7 +60,7 @@ CONFIGURATION=Release
 SDK="${BUILDSDK:=iphoneos}"
 RELEASE_BUILD_FOLDER="${repo_folder}/build/${CONFIGURATION}-${SDK}"
 
-if [ ! -z ${INFO_PLIST_PREFIX} ]; then info_plist_full_prefix = "${INFO_PLIST_PREFIX}-"; fi
+if [ ! -z ${INFO_PLIST_PREFIX} ]; then info_plist_full_prefix="${INFO_PLIST_PREFIX}-"; fi
 info_plist="${repo_folder}/${RESOURCES_FOLDER}/${info_plist_full_prefix}Info.plist"
 
 if [ -z ${TEST_SDK+x} ];
