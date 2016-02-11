@@ -2,11 +2,13 @@
 # Created by Michael Baltaks
 
 # Build release pair script: build a pair of release candidate packages
+# - apply build config
+# - run tests
 # - bump the build number
-# - commit
 # - clean and build
 # - package and sign for appstore and adhoc
 # - keep both packages and debug symbols, just for debugging test crash logs, or for later storing the final build and symbols.
+# - commit
 
 # Don't allow using unset vars (-u)
 set -o nounset
